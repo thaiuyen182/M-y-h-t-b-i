@@ -1,0 +1,36 @@
+name: Robot Vacuum NLP
+on:
+  push:
+    branches: [main]
+jobs:
+  nlp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements.txt
+      - name: Run NLP pipeline
+        run: python src/run_nlp.py --input robothutbui_facebookscrape.xlsx --sheet comments --output outputs --seed 42
+      - name: Verify deliverables
+        run: |
+          test -s outputs/cleaning_audit.csv
+          test -s outputs/commercial_review_sample.csv
+          test -s outputs/comment_level_results.csv
+          test -s outputs/sentiment_distribution.csv
+          test -s outputs/sentiment_distribution.png
+          test -s outputs/sentiment_score_distribution.png
+          test -s outputs/topic_summary.csv
+          test -s outputs/topic_bar_chart.png
+          test -s outputs/topic_sentiment_crosstab.csv
+          test -s outputs/topic_sentiment_heatmap.png
+          test -s outputs/report.md
+          test -s outputs/run_metadata.json
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-vacuum-nlp-outputs
+          path: outputs/
